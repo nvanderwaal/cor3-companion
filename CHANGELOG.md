@@ -10,6 +10,8 @@ and uses it as the release notes. Leave out headings that have nothing under the
 
 ## Unreleased
 
+## 1.2.9 (2026-11-19)
+
 ### New
 
 - **On its way to the Chrome Web Store and Firefox Add-ons.** Firefox copies move to the store version by
