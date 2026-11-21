@@ -20,7 +20,7 @@ Free, no account, no tracking. Works in Firefox, Chrome, Edge and Brave.
 | [Expeditions](#expeditions) | Clear risk and reward numbers on every decision, and real death odds | Alt+E |
 | [Loadout & market](#loadout--market) | Whether a part or program is an upgrade before you buy it | Alt+L |
 | [ICE WALL Break](#ice-wall-break) | Where the pattern can still fit, until only the answer is left | Alt+H |
-| [Inventory](#inventory) | Sell prices, rarity colours and your stash's total value | Alt+I |
+| [Inventory](#inventory) | Sell prices, rarity colours, your stash's total value and drone parts to keep | Alt+I |
 | [Protocol solver](#protocol-solver) | The best next move in the cleaner-bot protocol minigame | Alt+P |
 | [Daily ops](#daily-ops) | Spots the bad log lines and decodes the signal for you | Alt+D |
 | [Top bar](#top-bar) | What needs you now, at a glance | Alt+B |
@@ -136,6 +136,14 @@ revealed the options shrink, until one turns green with **MATCH**: that's the an
 
 Every item gets its sell price in the corner (**12k cr**) and a border in its rarity colour. A line on top shows
 your stash's total value and the slots used. Hover a stack's price to see the whole stack's value.
+
+Items you can hand in for the personal drone (Expeditions > Personal drone assembling) get a small tag above the
+price that counts them: with 4 Circuit components needed, they say **1/4**, **2/4**, **3/4**, **4/4** (green),
+and any after that say **SELL** (grey). The same tags show on the loot when you open an expedition's container,
+counting on from what's already in your stash: have 2 of 3 milk and the next one says **3/3**, the one after
+**SPARE**. Hover a tag for
+the drone stages and how many you need. The list of parts comes from the community guide, since the game doesn't
+send it; every option of a stage counts, so you may need fewer if you pay credits or pick another option.
 
 ## Protocol solver
 

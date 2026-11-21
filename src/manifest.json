@@ -49,6 +49,7 @@
         "helpers/protocol/protocol.js",
         "helpers/dailyops/dailyops.js",
         "helpers/expeditions/expeditions.js",
+        "helpers/inventory/drone.js",
         "helpers/inventory/inventory.js",
         "helpers/lighter/lighter.js",
         "helpers/topbar/topbar.js"
