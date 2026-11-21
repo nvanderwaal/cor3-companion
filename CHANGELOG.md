@@ -10,6 +10,13 @@ and uses it as the release notes. Leave out headings that have nothing under the
 
 ## Unreleased
 
+### Improved
+
+- **Lighter screen is now Lite mode (Alt+V).** Besides hiding the moving backgrounds and the map fog, it makes the
+  frosted-glass windows solid and stops decoration that animates forever, so the game runs much lighter on slower
+  computers or with hardware acceleration off. Minigames and timers are left alone. When your browser draws the
+  game without the graphics card, the top bar offers it once.
+
 ## 1.3.1 (2026-11-20)
 
 ### New

@@ -24,7 +24,7 @@ Free, no account, no tracking. Works in Firefox, Chrome, Edge and Brave.
 | [Protocol solver](#protocol-solver) | The best next move in the cleaner-bot protocol minigame | Alt+P |
 | [Daily ops](#daily-ops) | Spots the bad log lines and decodes the signal for you | Alt+D |
 | [Top bar](#top-bar) | What needs you now, at a glance | Alt+B |
-| [Lighter screen](#lighter-screen) | Hides moving backgrounds and map fog (off until you want it) | Alt+V |
+| [Lite mode](#lite-mode) | Turns off heavy effects for slower computers (off until you want it) | Alt+V |
 
 Every helper can be switched on or off with its key, from the extension's icon in the toolbar, or from the
 **Helpers** menu in the top bar. It remembers your choices.
@@ -159,10 +159,15 @@ there. **Helpers ▾** has all the switches. Click **◆ COR3** to shrink it to 
 Your jobs, an open decision and expeditions on their way back show as soon as the game opens, from what the
 helpers saw last time, until the game sends fresh data.
 
-## Lighter screen
+## Lite mode
 
-Hides the game's moving background videos and the fog on the network map, so the game uses less of your computer.
-Off until you switch it on.
+For slower computers, or a browser with hardware acceleration turned off, where every effect costs processor time.
+Lite mode hides the moving background videos and the network map fog, makes the frosted-glass windows solid, and
+stops decoration that animates forever (glitches, flicker, glows). Minigames, timers and progress bars are left
+alone. Off until you switch it on; switching it off puts everything back.
+
+When your browser is drawing the game without the graphics card, the top bar offers it once:
+**Game slow? Lite mode**. Click it to switch on, or **×** to hide the offer.
 
 ## Fair play and privacy
 

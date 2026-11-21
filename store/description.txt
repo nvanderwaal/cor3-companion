@@ -7,7 +7,7 @@ COR3 Companion adds small helpers to the cor3.gg browser game. Everything shows 
 • Expeditions (Alt+E): makes the risk/rewards popup on decisions clear with exact numbers, and shows the exact mission risk and each mercenary's death chance.
 • Loadout & market (Alt+L): shows what a program or hardware part would do to your setup, on the loadout page and on the market's cards, and stars the best upgrade.
 • Inventory (Alt+I): the sell price on every item, a border in its rarity colour, and your stash's total value.
-• Lighter screen (Alt+V, off by default): hides the moving backgrounds and the network map fog.
+• Lite mode (Alt+V, off by default): turns off heavy effects (moving backgrounds, map fog, blur, endless animations) for slower computers or a browser without hardware acceleration.
 • Top bar (Alt+B): a thin strip with what needs you now (jobs ready, a decision waiting, an expedition back) and the helper switches.
 
 Fair play: it only reads what the game already sends to your browser and never sends anything to the game. The one thing it fills in is the Signal Decode code box, which you then confirm yourself.

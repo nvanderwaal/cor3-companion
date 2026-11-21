@@ -18,8 +18,8 @@ globalThis.__cor3Helpers = [
     desc: "Exact risk and rewards on choices, and mercenary odds." },
   { id: "inventory", name: "Inventory", key: "I", net: true,
     desc: "Sell price on every item and a border in its rarity colour." },
-  { id: "lighter", name: "Lighter screen", key: "V",
-    desc: "Hides the moving backgrounds and the network map fog. Off by default." },
+  { id: "lighter", name: "Lite mode", key: "V",
+    desc: "Turns off heavy effects (moving backgrounds, blur, endless animations). For slower computers or no hardware acceleration." },
   { id: "topbar", name: "Top bar", key: "B",
     desc: "Thin strip in the game: jobs ready, next deadline, open decisions, helper switches." },
 ];

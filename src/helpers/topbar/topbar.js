@@ -123,6 +123,8 @@
         btn.title = "Couldn't find the game's Expeditions button. Open Expeditions in the game.";
       }
       if (act === "jobs") toggles().jobs?.set(true);
+      if (act === "lite") toggles().lighter?.set(true);
+      if (act === "lite-no") window.__cor3Lite?.dismiss();
       render(true);
     });
     menu.addEventListener("click", (e) => {
@@ -162,6 +164,12 @@
       parts.push(x.back
         ? `<button class="seg" data-act="decision" title="Open the expedition in the game"><span class="ok">Expedition back</span></button>`
         : `<button class="seg" data-act="decision" title="Open the expedition in the game">Expedition back in <span class="t">${x.text}</span></button>`);
+    }
+
+    // The browser draws without the graphics card: offer Lite mode, once.
+    if (window.__cor3Lite?.suggest) {
+      parts.push(`<button class="seg" data-act="lite" title="Your browser is drawing the game without the graphics card. Lite mode turns off the heavy effects (Alt+V).">Game slow? <span class="ok">Lite mode</span></button>`,
+        `<button class="seg dim" data-act="lite-no" title="Don't show this again (Lite mode stays in the Helpers menu)">&times;</button>`);
     }
 
     // A helper whose game data changed shape: a quiet mark on the Helpers
