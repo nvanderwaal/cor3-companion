@@ -28,6 +28,26 @@
     SECTOR_BAD: { button: "/sector parameter is incorrect", short: "/sector" },
     STATUS_BAD: { button: "/status parameter is incorrect", short: "/status" },
   };
+  // Live .error-type-button order: invalid_time, invalid_event_type,
+  // missing_sector, missing_status, invalid_sector, invalid_status.
+  const ERROR_BUTTON_ORDER = ["TIME", "TYPE", "MISSING_SECTOR", "MISSING_STATUS", "SECTOR_BAD", "STATUS_BAD"];
+
+  function errorButtonIndexes(errorCodes, buttonTexts) {
+    const codes = new Set(errorCodes);
+    if (buttonTexts.length === ERROR_BUTTON_ORDER.length) {
+      const indexes = [];
+      for (let i = 0; i < buttonTexts.length; i++) {
+        if (codes.has(ERROR_BUTTON_ORDER[i])) indexes.push(i);
+      }
+      return indexes;
+    }
+    const labels = new Set([...codes].map((code) => ERRORS[code].button));
+    const indexes = [];
+    for (let i = 0; i < buttonTexts.length; i++) {
+      if (labels.has(String(buttonTexts[i] ?? "").trim())) indexes.push(i);
+    }
+    return indexes;
+  }
 
   // The errors in one log line, each { code, detail }.
   function checkLine(raw) {
@@ -88,10 +108,9 @@
     for (const block of document.querySelectorAll(".analysis-container .error-analysis-block")) {
       const shown = block.querySelector(".log-line-display");
       const errs = shown ? checkLine(shown.textContent) : [];
-      const want = new Set(errs.map((e) => ERRORS[e.code].button));
-      for (const b of block.querySelectorAll(".error-type-button")) {
-        if (want.has((b.textContent || "").trim())) mark(b, color.CYAN);
-      }
+      const buttons = [...block.querySelectorAll(".error-type-button")];
+      const markAt = new Set(errorButtonIndexes(errs.map((e) => e.code), buttons.map((b) => b.textContent)));
+      for (let i = 0; i < buttons.length; i++) if (markAt.has(i)) mark(buttons[i], color.CYAN);
     }
   }
 
@@ -237,7 +256,7 @@
     save(STORE_KEY, state);
     if (!on) clear(); else tick();
   });
-  window.__cor3DailyOps = { checkLine, decodeSignal };
+  window.__cor3DailyOps = { checkLine, decodeSignal, errorButtonIndexes };
 
   window.__cor3.every(300, tick, "COR3 daily ops");
 })();

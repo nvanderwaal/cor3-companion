@@ -10,6 +10,10 @@ and uses it as the release notes. Leave out headings that have nothing under the
 
 ## Unreleased
 
+### Fixed
+
+- The error-button outlines follow the fixed button order, so they keep working if the game later translates these labels.
+
 ## 1.4.4 (2026-11-26)
 
 ### Fixed
