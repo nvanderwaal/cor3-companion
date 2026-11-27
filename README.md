@@ -85,6 +85,10 @@ button. Do a step and the tracker ticks it off for you and shows **2/3 done**:
 Ticks marked **✓ auto** were done by the tracker; you can still tick or untick any step yourself. The job turns
 green with **READY** once the game says you can hand it in.
 
+Every market you open remembers when its jobs reset, so you don't have to open each one to check. The panel
+lists them all, servers with a market get a **SOYUZ market** tag, and on the network map their name gets a purple
+outline. Hover it to see when that market's jobs reset.
+
 On the market, every job card gets a green ✓ when you can do the job now or a red ✗ with the reason, such as a
 server your HACK can't beat or a file no installed program can decrypt.
 
@@ -156,7 +160,9 @@ still possible, and the **ANSWER** in green once only one is left. With 6 attemp
 ## Top bar
 
 A thin strip at the top of the game that only shows what needs you: **Jobs 2 · 1 READY · next 42m**, a
-**Decision 2m 10s** waiting on an expedition, or **Expedition back** with loot waiting. Click a part to jump
+**Decision 2m 10s** waiting on an expedition, **New jobs SOYUZ** when a market's jobs reset since you last
+opened it, or **Expedition back** with loot waiting. With no jobs taken it shows the next reset
+(**Jobs reset HOME 42m**); hover for every market's reset. Click a part to jump
 there. **Helpers ▾** has all the switches. Click **◆ COR3** to shrink it to a single diamond.
 
 Your jobs, an open decision and expeditions on their way back show as soon as the game opens, from what the

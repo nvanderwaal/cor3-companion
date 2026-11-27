@@ -10,6 +10,14 @@ and uses it as the release notes. Leave out headings that have nothing under the
 
 ## Unreleased
 
+### New
+
+- **Job resets for every market.** Each market you open remembers when its jobs reset. The top bar shows the next
+  one (**Jobs reset SOYUZ 1h 05m**), or **New jobs SOYUZ** once a market has reset since you last opened it.
+  Hover for all of them. The job panel lists them too.
+- **Market servers stand out.** Servers that have a market get a purple outline on the network map, and a
+  **SOYUZ market** tag in the job panel, with when that market's jobs reset.
+
 ## 1.4.4 (2026-11-26)
 
 ### Fixed

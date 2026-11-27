@@ -36,7 +36,8 @@
     const next = taken.filter((j) => !j.canComplete && toMs(j.endTime) > Date.now())
       .sort((a, b) => toMs(a.endTime) - toMs(b.endTime))[0];
     return { taken: taken.length, ready, nextMs: next ? toMs(next.endTime) - Date.now() : null,
-             next: next ? left(next.endTime) : null, reset: left(st.market?.resetAt) };
+             next: next ? left(next.endTime) : null, reset: left(st.market?.resetAt),
+             resets: window.__cor3JobTracker.resets?.() || [] };
   }
 
   function decisionInfo() {
@@ -145,13 +146,26 @@
     const parts = [`<button class="seg logo" data-act="min" title="Shrink the bar (Alt+B hides it)">&#9670; COR3</button>`];
 
     const j = jobsInfo();
+    // Job resets of every market you've opened, one per line, for hovering.
+    const rs = j ? j.resets : [];
+    const resetTip = rs.length ? "\nJob resets:\n" + rs.map((r) =>
+      `${r.name}${r.server && r.server !== r.name ? ` (${r.server})` : ""}: ${r.fresh ? "new jobs" : r.left}`).join("\n") : "";
+    // Markets with new jobs; one you haven't opened for a day stops showing here.
+    const fresh = rs.filter((r) => r.fresh && r.ms > -24 * 3600e3);
+    const upcoming = rs.find((r) => !r.fresh);
     if (j && j.taken) {
       let txt = `Jobs ${j.taken}`;
       if (j.ready) txt += ` &middot; <span class="ok">${j.ready} READY</span>`;
       if (j.next) txt += ` &middot; next <span class="${j.nextMs < 15 * 60e3 ? "bad" : "t"}">${j.next}</span>`;
-      parts.push(`<button class="seg" data-act="jobs" title="Open the job tracker">${txt}</button>`);
-    } else if (j && j.reset) {
+      parts.push(`<button class="seg" data-act="jobs" title="${esc("Open the job tracker" + resetTip)}">${txt}</button>`);
+    } else if (upcoming && !fresh.length) {
+      parts.push(`<span class="seg dim" title="${esc("When a market's jobs reset next" + resetTip)}">Jobs reset ${esc(upcoming.name)} ${upcoming.left}</span>`);
+    } else if (j && j.reset && !rs.length) {
       parts.push(`<span class="seg dim" title="When the market's jobs reset">Jobs reset ${j.reset}</span>`);
+    }
+    // A market whose jobs reset since you last opened it.
+    if (fresh.length) {
+      parts.push(`<span class="seg" title="${esc("These markets have new jobs since you last opened them" + resetTip)}">New jobs <span class="ok">${esc(fresh.map((r) => r.name).join(", "))}</span></span>`);
     }
 
     const d = decisionInfo();
