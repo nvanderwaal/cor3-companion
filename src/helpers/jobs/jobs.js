@@ -31,6 +31,29 @@
   // as the game opens again; the game's next job list replaces them.
   const save = () => saveSoon(STORE_KEY, state);
 
+  // Every market you've opened: id -> { id, name, resetAt, seenAt }.
+  if (!state.markets) state.markets = {};
+  let lastMarket = null, pendingReset = null;
+  function setReset(id, at) {
+    const m = (state.markets[id] = { ...state.markets[id], id });
+    m.resetAt = at;
+    m.seenAt = Date.now();
+  }
+  // The server a market sits on (servers on the network map carry its id).
+  const marketServer = (id) => Object.values(state.servers).find((s) => s.marketId != null && String(s.marketId) === id) || null;
+  const marketOf = (s) => (s && s.marketId != null ? state.markets[String(s.marketId)] || { id: String(s.marketId) } : null);
+  const marketName = (m) => m.name || marketServer(m.id)?.serverName || "Market";
+  // Job resets of every market you've opened, soonest first. A market whose
+  // reset time has passed has new jobs you haven't seen yet ("fresh").
+  function resets() {
+    return Object.values(state.markets).filter((m) => m.resetAt).map((m) => {
+      const ms = toMs(m.resetAt) - Date.now();
+      const s = marketServer(m.id);
+      return { id: m.id, name: marketName(m), server: s?.serverName || "", fresh: !(ms > 0), ms, left: shortLeft(m.resetAt) };
+    }).sort((a, b) => (b.fresh - a.fresh) || a.ms - b.ms);
+  }
+  window.__cor3JobTracker.resets = resets;
+
   const isJob = (o) => o && typeof o === "object" && ["TAKEN", "COMPLETED", "FAILED"].includes(o.status) &&
     ("conditions" in o || "relatedServers" in o) && o.id != null;
   const isServer = (o) => o && typeof o === "object" && typeof o.serverIp === "string" &&
@@ -78,9 +101,25 @@
         changed = true;
       }
     }
+    // Which market a reply is about: the market's own info (its id and
+    // name) comes with the options reply; its job list doesn't say, so it
+    // goes to the market whose info came in just before or just after it.
+    if (d && d.market && typeof d.market === "object" && d.market.id != null) {
+      const id = String(d.market.id);
+      const m = (state.markets[id] = { ...state.markets[id], id });
+      if (d.market.marketName) m.name = d.market.marketName;
+      lastMarket = { id, t: Date.now() };
+      if (pendingReset && Date.now() - pendingReset.t < 5000) { setReset(id, pendingReset.at); pendingReset = null; }
+      changed = true;
+    }
     // When the market's jobs reset next.
     if (node.nextJobsResetAt && toMs(node.nextJobsResetAt) > 0) {
       state.market = { ...(state.market || {}), resetAt: node.nextJobsResetAt };
+      const own = node.market?.id ?? node.marketId ??
+        (Array.isArray(node.jobs) ? node.jobs.find((j) => j && j.marketId != null)?.marketId : null);
+      const id = own != null ? String(own) : lastMarket && Date.now() - lastMarket.t < 5000 ? lastMarket.id : null;
+      if (id) setReset(id, node.nextJobsResetAt);
+      else pendingReset = { at: node.nextJobsResetAt, t: Date.now() };
       changed = true;
     }
     // The network map's links between servers, for working out routes.
@@ -139,7 +178,7 @@
         _seen: Date.now(),
       };
       // Network map extras; smaller server objects in other events leave them out.
-      for (const k of ["maintenanceEndsAt", "timeUntilMaintenance", "serverDefenceRate", "serverTypeName"]) {
+      for (const k of ["maintenanceEndsAt", "timeUntilMaintenance", "serverDefenceRate", "serverTypeName", "marketId"]) {
         s[k] = k in node ? node[k] : old[k];
       }
       if (!s.isInMaintenance && "isInMaintenance" in node) s.maintenanceEndsAt = null;
@@ -199,6 +238,9 @@
     .srv .ip { flex: 1 1 150px; word-break: break-all; }
     .route { color: #7f9aa3; font-size: 10px; margin: 0 0 2px 8px; word-break: break-all; }
     .route .hop { color: #ffa040; }
+    .badge.mk { background: #2a2147; color: #c3b2ff; }
+    .new { color: #5df0a0; }
+    .route .mk { color: #c3b2ff; }
     .empty { color: #7f9aa3; padding: 8px 0; }
     .desc { color: #9fb6bd; margin-top: 2px; }
   `;
@@ -539,7 +581,8 @@
   function routeLine(route) {
     return route.map((ip, i) => {
       const s = state.servers[ip] || {};
-      const name = esc(i === 0 ? "Home" : s.serverName || ip);
+      const mk = i && i < route.length - 1 && marketOf(s);
+      const name = esc(i === 0 ? "Home" : s.serverName || ip) + (mk ? ` <span class="mk">(${esc(marketName(mk))} market)</span>` : "");
       return i && i < route.length - 1 && !s.isAccessible ? `<span class="hop">${name}</span>` : name;
     }).join(" &rarr; ");
   }
@@ -550,8 +593,18 @@
     const s = findServer(rs);
     const r = reach(s);
     if (!s) return `<span class="badge" title="${esc(r.tip)}">${r.text}</span>`;
+    const mk = marketOf(s);
+    const tag = mk ? marketTag(mk) : "";
     const extra = serverInfo(s).map((i) => `<span class="badge ${i.cls}" title="${esc(i.tip)}">${i.text}</span>`).join("");
-    return (r.text ? `<span class="badge ${r.cls}" title="${esc(r.tip)}">${r.text}</span>` : "") + extra;
+    return (r.text ? `<span class="badge ${r.cls}" title="${esc(r.tip)}">${r.text}</span>` : "") + extra + tag;
+  }
+
+  // "SOYUZ market" on a server that has a market, with its next job reset.
+  function marketTag(m) {
+    const left = m.resetAt ? shortLeft(m.resetAt) : null;
+    const tip = !m.resetAt ? "Has a market; open it once to learn when its jobs reset"
+      : left ? `Has a market; its jobs reset in ${left}` : "Has a market with new jobs since you last opened it";
+    return `<span class="badge mk" title="${esc(tip)}">${esc(marketName(m))} market</span>`;
   }
 
   function render() {
@@ -618,8 +671,11 @@
       const seen = Object.keys(state.servers).length;
       const m = state.market;
       const when = m?.at ? new Date(m.at).toTimeString().slice(0, 5) : "";
-      const reset = shortLeft(m?.resetAt);
-      html += `<div class="empty">${m?.at ? `Market (${when}): ${m.offers ?? "?"} offers, ${m.taken ?? "?"} taken.<br>` : ""}${reset ? `Jobs reset in ${reset}.<br>` : ""}${seen} servers known from the network map.</div></div>`;
+      const rs = resets();
+      const reset = rs.length
+        ? `Job resets: ${rs.map((r) => `<span title="${esc(r.server)}">${esc(r.name)}</span> ${r.fresh ? `<span class="new">new jobs</span>` : r.left}`).join(" &middot; ")}.<br>`
+        : shortLeft(m?.resetAt) ? `Jobs reset in ${shortLeft(m.resetAt)}.<br>` : "";
+      html += `<div class="empty">${m?.at ? `Market (${when}): ${m.offers ?? "?"} offers, ${m.taken ?? "?"} taken.<br>` : ""}${reset}${seen} servers known from the network map.</div></div>`;
     }
     // Rewriting the panel resets its scroll and can swallow a click, so only
     // write it when something other than the ticking countdowns changed.
@@ -990,12 +1046,57 @@
     hintBox.style.right = `${Math.max(8, Math.round(window.innerWidth - r.right))}px`;
   }
 
+  // ---------- market servers on the network map ----------
+  // While the network map is open, the name of every server that has a
+  // market gets a purple outline, and hovering it says which market and when
+  // its jobs reset. Only the outline is added; the game's layout stays as is.
+  const MAP_CSS = `[data-cor3-mk] { outline: 2px solid #a58bff !important; outline-offset: 2px; border-radius: 3px;
+    box-shadow: 0 0 8px rgba(165,139,255,.55) !important; }`;
+  const MAP_STYLE_ID = "cor3-jt-map-style";
+  function markMap() {
+    const keep = new Set();
+    const mapOpen = document.querySelector('video[src*="/video/network-map/"]');
+    const list = mapOpen ? Object.values(state.servers).filter((s) => s.marketId != null && (s.serverName || s.serverIp)) : [];
+    if (list.length && !document.getElementById(MAP_STYLE_ID)) {
+      const st = document.createElement("style");
+      st.id = MAP_STYLE_ID; st.textContent = MAP_CSS;
+      (document.head || document.documentElement).appendChild(st);
+    }
+    // One text search for every market server's name and IP.
+    const tips = new Map();
+    for (const s of list) {
+      const m = marketOf(s);
+      const left = m.resetAt ? shortLeft(m.resetAt) : null;
+      const tip = `${marketName(m)} market` + (!m.resetAt ? "" : left ? `, jobs reset in ${left}` : ", new jobs since you last opened it");
+      for (const name of [s.serverName, s.serverIp]) if (name && !name.includes("'")) tips.set(name, tip);
+    }
+    if (tips.size) {
+      const test = [...tips.keys()].map((n) => `normalize-space()='${n}'`).join(" or ");
+      const found = document.evaluate(`//body//text()[${test}]`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+      for (let i = 0; i < found.snapshotLength; i++) {
+        const t = found.snapshotItem(i);
+        const el = t.parentElement;
+        const tip = tips.get(t.nodeValue.trim().replace(/\s+/g, " "));
+        if (!tip || !el || el.closest('[id^="cor3-"]') || !el.getClientRects().length) continue;
+        keep.add(el);
+        if (!el.hasAttribute("data-cor3-mk")) { el.setAttribute("data-cor3-mk", ""); el.dataset.cor3MkTitle = el.title || ""; }
+        if (el.title !== tip) el.title = tip;
+      }
+    }
+    for (const el of document.querySelectorAll("[data-cor3-mk]")) if (!keep.has(el)) {
+      el.removeAttribute("data-cor3-mk");
+      el.title = el.dataset.cor3MkTitle || "";
+      delete el.dataset.cor3MkTitle;
+    }
+  }
+
   // Countdowns tick once a second; card marks follow the game's page.
   window.__cor3.every(1000, () => {
     if (state.panel.open && !state.panel.min && Object.keys(state.jobs).length) render();
   }, "job tracker");
   window.__cor3.onDom(annotateJobCards, 250);
   window.__cor3.onDom(markTerminal, 300);
+  window.__cor3.onDom(markMap, 400);
   document.addEventListener("DOMContentLoaded", render);
   if (document.readyState !== "loading") render();
 })();
