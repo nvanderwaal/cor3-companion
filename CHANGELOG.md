@@ -10,6 +10,11 @@ and uses it as the release notes. Leave out headings that have nothing under the
 
 ## Unreleased
 
+### Fixed
+
+- The job tracker compares your DECRYPT power with the file's crypt rate, so a file you can't decrypt yet shows
+  **DECRYPT 24/29 ✗** instead of a green tick.
+
 ## 1.4.4 (2026-11-26)
 
 ### Fixed

@@ -26,7 +26,7 @@
   // The market's current offers by id, for checking each job card.
   const offers = new Map();
   if (!state.auto) state.auto = {};
-  window.__cor3JobTracker = { debug, state };
+  window.__cor3JobTracker = { debug, state, decryptFiles, decryptCheck };
   // Kept in localStorage, so the panel and the top bar show your jobs as soon
   // as the game opens again; the game's next job list replaces them.
   const save = () => saveSoon(STORE_KEY, state);
@@ -364,13 +364,13 @@
   };
 
   // ---------- decrypting ----------
-  // Required DECRYPT power per file, from what the game sends when you analyse
-  // a file or a decrypt fails for lack of power: file id or name -> number.
+  // Required DECRYPT power per file (the file's crypt rate), from what the game sends
+  // when you analyse a file or a decrypt fails for lack of power: file id or name -> number.
   const needs = {};
   const DECRYPT_COND = /decrypt/i;
   const extOf = (name) => { const m = /\.([a-z0-9]+)$/i.exec(String(name || "")); return m ? m[1] : ""; };
   const numIn = (o, keys) => { for (const k of keys) if (typeof o?.[k] === "number" && o[k] > 0) return o[k]; return null; };
-  const NEED_KEYS = ["requiredDecryptPower", "decryptPowerRequired", "requiredPower", "decryptPower", "encryptionLevel"];
+  const NEED_KEYS = ["cryptRate", "requiredDecryptPower", "decryptPowerRequired", "requiredPower", "encryptionLevel"];
   // Files a job asks you to decrypt: { name, ext, need }.
   function decryptFiles(job) {
     const out = [];
@@ -412,7 +412,7 @@
     if (!d || typeof d !== "object") return false;
     let need = null;
     if (d.kind === "insufficient_power" && String(d.ability || "DECRYPT").toUpperCase() === "DECRYPT") need = numIn(d, ["required"]);
-    else if (typeof d.canDecrypt === "boolean") need = numIn(d, ["decryptPower", "requiredPower", "required"]);
+    else if (typeof d.canDecrypt === "boolean") need = numIn(d, ["cryptRate", "requiredPower", "required"]);
     if (need == null) return false;
     let hit = false;
     for (const k of [d.fileId, d.id, d.file?.id, d.fileName, d.name, d.file?.name]) {
